@@ -17,17 +17,18 @@ role :app, "#{deploy_by_user}#{ip}"
 role :web, "#{deploy_by_user}#{ip}"
 role :db,  "#{deploy_by_user}#{ip}", :primary => true
 
-# after 'deploy:symlink', 'deploy:shared_data'
+after 'deploy:symlink', 'deploy:shared_data'
 
 namespace :deploy do
 
-  # task :shared_data do
-  #   shared_avatars_dir = "#{shared_path}/assets"
-  #   run "mkdir -p #{shared_avatars_dir}" # make dir if it doesn't exist
-  #   run "chown  -R www-data #{shared_avatars_dir}"
-  #   run "ln -s #{shared_avatars_dir} #{current_path}/public/assets"
-  #   run "cd #{release_path} && /var/lib/gems/1.8/bin/whenever --update-crontab #{application}"
-  # end
+  task :shared_data do
+    files_dir = "#{shared_path}/files"
+    run "mkdir -p #{files_dir}" # make dir if it doesn't exist
+    run "chown  -R www-data #{files_dir}"
+    run "ln -s #{files_dir} #{current_path}/files"
+    
+    run "cd #{release_path} && /var/lib/gems/1.8/bin/rake generate_session_store RAILS_ENV=production"
+  end
 
   task :restart, :roles => :app do
     run "chown  -R www-data #{current_path}/"
